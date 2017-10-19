@@ -25,7 +25,7 @@ TODO (for Yousuf and Aaron): Stopline location for each traffic light.
 LOOKAHEAD_WPS = 200 # Number of waypoints we will publish. You can change this number
 MAX_DECEL = 5.0
 MAX_ACCEL = 1.0
-SAFE_DIST = 30.0
+SAFE_DIST = 32.0
 
 class WaypointUpdater(object):
     def __init__(self):
@@ -68,7 +68,10 @@ class WaypointUpdater(object):
             lane.header.stamp = rospy.Time(0)   
       
             # safety stop distance 
-	    min_dist_stop = self.current_velocity**2 / (2.0 * MAX_DECEL) + SAFE_DIST
+            if self.current_velocity is not None:
+	        min_dist_stop = self.current_velocity**2 / (2.0 * MAX_DECEL) + SAFE_DIST
+            else:
+	        min_dist_stop = SAFE_DIST
 	    # generate final_waypoints and publish
 	    if self.traffic_waypoint and self.traffic_waypoint != -1:
 		tl_dist = self.distance(self.base_waypoints.waypoints, closest_index, self.traffic_waypoint)
@@ -92,7 +95,8 @@ class WaypointUpdater(object):
             		wp.pose.pose.orientation = self.base_waypoints.waypoints[index].pose.pose.orientation
 		        final_waypoints.append(wp)
                     # set speed to stop before traffic light
-		    lane.waypoints = self.decelerate(final_waypoints)
+                    if len(final_waypoints) != 0:
+		        lane.waypoints = self.decelerate(final_waypoints)
 		else:
 		    rospy.loginfo("no braking since too far to traffic light")
 		    lane.waypoints = self.base_waypoints.waypoints[next_index : (next_index + LOOKAHEAD_WPS)]

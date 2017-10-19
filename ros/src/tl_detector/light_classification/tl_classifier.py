@@ -6,13 +6,14 @@ import time
 from PIL import Image
 
 
-TRAFFIC_CLASSIFIER_MDOEL_PATH = './model/frozen_inference_graph-sim-101201.pb'
 DETECTION_THRESHOLD = 0.5
 
 class TLClassifier(object):
-    def __init__(self):
+    def __init__(self, model):
 	self.state = TrafficLight.UNKNOWN
 
+	# Get model name according to simulator or site launch files definition
+        TRAFFIC_CLASSIFIER_MDOEL_PATH = model
         #TODO load classifier
 	self.detection_graph = tf.Graph()
 
@@ -86,7 +87,7 @@ class TLClassifier(object):
         time1 = time.time()
 
         output = self.__postprocessing_detected_box(scores[0], classes[0])
-        rospy.logerr('Time in seconds' + str(time1-time_start)+' Result:'+self.__traffic_id_to_name(output))
+        rospy.loginfo('Time in seconds' + str(time1-time_start)+' Result:'+self.__traffic_id_to_name(output))
         return output
 
 
